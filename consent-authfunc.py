@@ -190,3 +190,5 @@ print(authResponse.headers)
 # Switch automated consent, retrieve auth code
 print(authResponse.headers['Location'])
 redirectResponse = requests.get(authResponse.headers['Location'], allow_redirects=False)
+
+consentResponse = session.post(consentUrl, params=consentPayload)
