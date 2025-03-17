@@ -1,0 +1,4 @@
+.venv/
+nonprod-live*
+*.pyc
+*.crt

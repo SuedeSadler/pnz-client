@@ -1,0 +1,10 @@
+# Generate private key
+openssl genrsa -des3 -out private.pem 4096
+
+# Enter pass phrase: passphrase
+
+# Generate public key
+openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+
+# Symmetric key generation - 32 characters => 256 bits
+head -3 /dev/urandom | tr -cd '[:alnum:]' | cut -c -32
