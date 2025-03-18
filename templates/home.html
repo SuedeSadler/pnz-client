@@ -10,6 +10,9 @@
         <p>Your bank account is successfully connected!</p>
         <p>Access Token: {{ access_token }}</p>
         <a href="/accounts">View Account Details</a>
+        <a href="/logout">
+            <button>Log Out</button>
+        </a>
     {% else %}
         <p>Click below to connect your bank account:</p>
         <a href="/authorize">
@@ -18,30 +21,41 @@
     {% endif %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          // Extract code and id_token from URL fragment
-          const urlParams = new URLSearchParams(window.location.hash.substr(1));
-          const code = urlParams.get('code');
-          const idToken = urlParams.get('id_token');
-      
-          if (code) {
-            // Send code to the server via POST
-            fetch('/callback', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                code: code,
-                id_token: idToken
-              })
-            })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error('Error:', error));
-          }
-        });
-      </script>
+        window.onload = function() {
+            // Extract code and id_token from URL fragment
+            const urlParams = new URLSearchParams(window.location.hash.substr(1));
+            const code = urlParams.get('code');
+            const idToken = urlParams.get('id_token');
+        
+            if (code) {
+                // Clear the fragment from the URL (optional but recommended)
+                window.history.replaceState({}, document.title, window.location.pathname);
+        
+                // Send code to the server via POST
+                fetch('/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        id_token: idToken
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Callback response:', data);
+                    if (data.access_token) {
+                        // Store token in session storage (optional)
+                        sessionStorage.setItem('access_token', data.access_token);
+                        // Redirect to remove code from URL
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        };
+        </script>
       
 </body>
 </html>

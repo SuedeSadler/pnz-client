@@ -50,11 +50,10 @@ def callback():
         auth_code = data.get('code')
         id_token = data.get('id_token')
 
-        if not auth_code or not id_token:
-            return jsonify({'error': 'Authorization code or ID token missing'}), 400
+        if not auth_code:
+            return jsonify({'error': 'Authorization code missing'}), 400
 
-
-        # Create client assertion
+        # Create client assertion (assuming pnz_utils handles this)
         Token = pnz_utils.create_client_assertion(key, clientId, tokenUrl)
 
         # Exchange authorization code for access token
@@ -70,7 +69,7 @@ def callback():
             url=tokenUrl,
             data=requestData,
             headers={'Content-Type': 'application/x-www-form-urlencoded',
-                    'user-agent': 'MyApp 0.0.1'},
+                     'user-agent': 'MyApp 0.0.1'},
             cert=('selfsigned.crt', 'private.key')
         )
 
@@ -79,10 +78,13 @@ def callback():
             return jsonify({'error': 'Failed to exchange authorization code', 'details': response.text}), response.status_code
 
         token_data = response.json()
-        session['access_token'] = token_data.get('access_token')  # Store token in session
+        
+        # Store access token in session
+        session['access_token'] = token_data.get('access_token')
+
         print('Access token obtained:', token_data)
 
-        return jsonify(token_data)
+        return jsonify({"message": "Success", "access_token": token_data.get("access_token")})
 
     except Exception as e:
         print("Exception occurred:", traceback.format_exc())  # Print full traceback
