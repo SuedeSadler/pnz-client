@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to Ropu</title>
+</head>
+<body>
+    <h1>Welcome to Ropu</h1>
+    {% if access_token %}
+        <p>Your bank account is successfully connected!</p>
+        <p>Access Token: {{ access_token }}</p>
+        <a href="/accounts">View Account Details</a>
+    {% else %}
+        <p>Click below to connect your bank account:</p>
+        <a href="/authorize">
+            <button>Connect Bank Account</button>
+        </a>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          // Extract code and id_token from URL fragment
+          const urlParams = new URLSearchParams(window.location.hash.substr(1));
+          const code = urlParams.get('code');
+          const idToken = urlParams.get('id_token');
+      
+          if (code) {
+            // Send code to the server via POST
+            fetch('/callback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                code: code,
+                id_token: idToken
+              })
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+          }
+        });
+      </script>
+      
+</body>
+</html>

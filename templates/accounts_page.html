@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts</title>
+</head>
+<body>
+    <h1>Bank Accounts</h1>
+
+    {% if accounts %}
+        <h2>Account Details</h2>
+        <ul>
+            {% for account_item in accounts %}
+                <li>
+                    <strong>Account ID:</strong> {{ account_item['account']['AccountId'] }}<br>
+                    <strong>Account Name:</strong> {{ account_item['account']['Account']['Name'] }}<br>
+                    <strong>Account Type:</strong> {{ account_item['account']['AccountType'] }}<br>
+                    <strong>Account SubType:</strong> {{ account_item['account']['AccountSubType'] }}<br>
+                    <strong>Currency:</strong> {{ account_item['account']['Currency'] }}<br>
+                    <strong>Description:</strong> {{ account_item['account']['Description'] }}<br>
+                    <strong>Nickname:</strong> {{ account_item['account']['Nickname'] }}<br>
+
+                    <h3>Balance</h3>
+                    {% if account_item['balance'] %}
+                        <p>Balance Amount: {{ account_item['balance']['Data']['BalanceAmount'] }}</p>
+                    {% else %}
+                        <p>No balance information available.</p>
+                    {% endif %}
+
+                    <h3>Transactions</h3>
+                    {% if account_item['transactions'] %}
+                        <ul>
+                            {% for transaction in account_item['transactions']['Data']['Transactions'] %}
+                                <li>
+                                    <strong>Transaction Amount:</strong> {{ transaction['TransactionAmount'] }}<br>
+                                    <strong>Transaction Date:</strong> {{ transaction['BookingDate'] }}<br>
+                                    <strong>Description:</strong> {{ transaction['TransactionInformation'] }}<br>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No transactions found for this account.</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No account data available.</p>
+    {% endif %}
+</body>
+</html>

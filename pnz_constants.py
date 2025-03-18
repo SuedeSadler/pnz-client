@@ -3,4 +3,4 @@ authoriseUrl = "https://api-nomatls.apicentre.middleware.co.nz/oauth/v2.0/author
 clientId = "2adb618bd9934497bd7872e67e49343d"
 responseType = "code id_token"
 scope = "openid accounts payments"
-redirectUri = "http://localhost:8765/"
+redirectUri = "http://127.0.0.1:8765/"
