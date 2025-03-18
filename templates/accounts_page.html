@@ -22,26 +22,82 @@
                     <strong>Nickname:</strong> {{ account_item['account']['Nickname'] }}<br>
 
                     <h3>Balance</h3>
-                    {% if account_item['balance'] %}
-                        <p>Balance Amount: {{ account_item['balance']['Data']['BalanceAmount'] }}</p>
-                    {% else %}
-                        <p>No balance information available.</p>
-                    {% endif %}
-
-                    <h3>Transactions</h3>
-                    {% if account_item['transactions'] %}
+                    {% if account_item['balance'] and account_item['balance'].get('Data') and account_item['balance']['Data'].get('Balance') %}
                         <ul>
-                            {% for transaction in account_item['transactions']['Data']['Transactions'] %}
+                            {% for balance in account_item['balance']['Data']['Balance'] %}
                                 <li>
-                                    <strong>Transaction Amount:</strong> {{ transaction['TransactionAmount'] }}<br>
-                                    <strong>Transaction Date:</strong> {{ transaction['BookingDate'] }}<br>
-                                    <strong>Description:</strong> {{ transaction['TransactionInformation'] }}<br>
+                                    <strong>Account ID:</strong> {{ balance.get('AccountId', 'N/A') }}<br>
+                                    <strong>Type:</strong> {{ balance.get('Type', 'N/A') }}<br>
+                                    <strong>Balance Amount:</strong> {{ balance.get('Amount', {}).get('Amount', 'N/A') }} {{ balance.get('Amount', {}).get('Currency', 'N/A') }}<br>
+                                    <strong>Date:</strong> {{ balance.get('DateTime', 'N/A') }}<br>
+                                    <strong>Credit/Debit:</strong> {{ balance.get('CreditDebitIndicator', 'N/A') }}
                                 </li>
                             {% endfor %}
                         </ul>
                     {% else %}
-                        <p>No transactions found for this account.</p>
+                        <p>No balance information available.</p>
                     {% endif %}
+
+                    <h3>Recent Transactions</h3>
+                    {% if account_item['transactions'] and account_item['transactions'] | length > 0 %}
+                        <ul>
+                            {% for transaction_data in account_item['transactions'] %}
+                                {% if transaction_data.get('Data') and transaction_data['Data'].get('Transaction') %}
+                                    {% for transaction in transaction_data['Data']['Transaction'] %}
+                                        <li>
+                                            <strong>
+                                                {% if transaction['CreditDebitIndicator'] == 'Credit' %}
+                                                    +{{ transaction['Amount']['Amount'] }} {{ transaction['Amount']['Currency'] }}
+                                                {% else %}
+                                                    -{{ transaction['Amount']['Amount'] }} {{ transaction['Amount']['Currency'] }}
+                                                {% endif %}
+                                            </strong>
+                                            <br>
+                                            <em>{{ transaction['BookingDateTime'][:10] }}</em> <!-- Date -->
+                                            <br>
+                                            {{ transaction.get('TransactionInformation', 'No details available') }}
+                                            <br>
+
+                                            <!-- Show Sender/Receiver Name -->
+                                            {% if transaction.get('TransactionReference') %}
+                                                {% if transaction['CreditDebitIndicator'] == 'Credit' %}
+                                                    <small>From: {{ transaction['TransactionReference'].get('DebtorName', 'Unknown') }}</small>
+                                                {% else %}
+                                                    <small>To: {{ transaction['TransactionReference'].get('CreditorName', 'Unknown') }}</small>
+                                                {% endif %}
+                                                <br>
+                                            {% endif %}
+
+                                            <!-- Display Reference -->
+                                            {% if transaction.get('TransactionReference') and transaction['TransactionReference'].get('CreditorReference') %}
+                                                <small>Reference: {{ transaction['TransactionReference']['CreditorReference'].get('Reference', 'N/A') }}</small>
+                                                <br>
+                                            {% endif %}
+
+                                            <!-- Show Transaction Type -->
+                                            {% if transaction.get('BankTransactionCode') %}
+                                                <small>Type: {{ transaction['BankTransactionCode'].get('Code', 'Unknown') }}</small>
+                                                <br>
+                                            {% endif %}
+
+                                            <!-- Show Transaction Status -->
+                                            <small>Status: {{ transaction.get('Status', 'Unknown') }}</small>
+                                            <br>
+
+                                            <!-- Display Merchant Name if applicable -->
+                                            {% if transaction.get('MerchantDetails') %}
+                                                <small>Merchant: {{ transaction['MerchantDetails'].get('MerchantName', 'N/A') }}</small>
+                                            {% endif %}
+                                        </li>
+                                        <br>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No transactions available.</p>
+                    {% endif %}
+
                 </li>
             {% endfor %}
         </ul>
