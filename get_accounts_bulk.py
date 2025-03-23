@@ -85,7 +85,7 @@ def get_accounts(accessToken):
 
                 recent_transactions = sorted_transactions[:10]  # Get top 10
 
-                print(f"✅ Most recent transactions for {account_id}: {json.dumps(recent_transactions, indent=2)[:500]}")
+                print(f"✅ Most recent transactions for {account_id}: {json.dumps(recent_transactions, indent=2)[:1000]}")
 
                 # Append data
                 accounts_with_balances_and_transactions.append({
@@ -95,6 +95,7 @@ def get_accounts(accessToken):
                 })
 
             print("\n✅ All accounts, balances, and transactions fetched successfully!")
+            #print(accounts_with_balances_and_transactions)
             return accounts_with_balances_and_transactions
 
         else:
