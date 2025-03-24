@@ -149,7 +149,6 @@ def authorize():
     except Exception as e:
         return jsonify({"error": "Authorization failed", "message": str(e)}), 500
 
-# Open an ngrok tunnel to your Flask app
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8765, debug=True, ssl_context=('selfsigned.crt', 'private.key'))
