@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
+import logging
+import traceback
 import pnz_utils
 import pnz_constants
 import consent_auth
@@ -26,7 +28,11 @@ context.set_passwd_cb(lambda *args: 'yomama')  # Replace 'yomama' with the corre
 # context.use_certificate_file('path_to_certificate.pem')
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow API access from Expo frontend
+# Configure CORS to allow access from all origins (or specify specific origins)
+CORS(app, resources={r"/*": {"origins": "https://ropu.app", "allow_headers": "Authorization"}})
+  # Allow all origins
+
+
 
 # OAuth Config
 tokenUrl = pnz_constants.tokenUrl
@@ -112,19 +118,58 @@ def callback():
 
 @app.route("/accounts", methods=["GET"])
 def get_accounts():
-    """Returns account data as JSON (requires access token in headers)."""
+    
+    print(f"📥 GET request received: {request.method} {request.path}")
+    
+    # Check if the Authorization header is present
     access_token = request.headers.get("Authorization")
-    print(access_token)
     if not access_token:
+        print("Missing Authorization token")
         return jsonify({"error": "Missing access token"}), 401
 
-    accounts_data = get_accounts_bulk.get_accounts(access_token)
-    if "error" in accounts_data:
-        return jsonify(accounts_data), 500
+    print(f"Access token provided: {access_token}")
 
-    return jsonify(accounts_data)
+    try:
+        # Call to your business logic to get accounts data
+        accounts_data = get_accounts_bulk.get_accounts(access_token)
+        if "error" in accounts_data:
+            print(f"Error fetching accounts data: {accounts_data}")
+            return jsonify(accounts_data), 500
+        
+        print(f"Accounts data fetched successfully: {accounts_data}")
+
+        # Create the response object for GET
+        response = jsonify(accounts_data)
+        response.headers["Access-Control-Allow-Origin"] = "https://ropu.app"
+        response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+
+        print("CORS headers set for GET response")
+        return response
+
+    except Exception as e:
+        # Handle any exception during the accounts data fetching process
+        print(f"Exception occurred while fetching accounts data: {e}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
+@app.after_request
+def apply_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "https://ropu.app"  # Allow requests from any domain
+    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, ngrok-skip-browser-warning "
+    
+    # ✅ Update Content-Security-Policy to allow your frontend
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' https://cdn.ngrok.com 'unsafe-eval' 'unsafe-inline'; "
+        "connect-src 'self' https://ropu.app https://3033-115-188-32-131.ngrok-free.app; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline';"
+    )
+
+    return response
+
+    
 @app.route("/authorize", methods=["POST"])
 def authorize():
     """Initiates the authorization process and returns the consent URL."""
@@ -151,4 +196,4 @@ def authorize():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8765, debug=True, ssl_context=('selfsigned.crt', 'private.key'))
+    app.run(host='localhost', port=5000, debug=True, ssl_context=None)
